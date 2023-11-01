@@ -73,14 +73,14 @@ class SimpleNN:
 
     def get_predictions(self, x):
         a = x
-        for i in range(self.layers - 1): # Feed forwared while recording each weight and activation
+        for i in range(self.layers - 1):
             z = np.dot(self.weights_matrix[i], a) + self.biases_matrix[i]
             a = activation(z)
         return a
 
 
     def train(self, n_iter, x, y, n_batches):
-        for iteration in range(n_iter):
+        for iteration in range(n_iter): #Go through each epoch
             # First shuffle data arrays
             data_size = x.size
             s = np.arange(0, data_size, 1)
@@ -101,16 +101,19 @@ class SimpleNN:
                     x_batches.append(x_s[n*batch_size:])
                     y_batches.append(y_s[n*batch_size:])
 
+            # After creating batches start the stochastic gradient descent with mini batches
             print(f'Iteration {iteration+1}')
-            for x_batch, y_batch in zip(x_batches, y_batches):
-                for xx, yy in zip(x_batch, y_batch):
-                    self.feed_forward(xx)
-                    self.backpropagation(yy)
-                self.gradient_descent(batch_size)
+            for x_batch, y_batch in zip(x_batches, y_batches): # Chose a mini batch
+                for xx, yy in zip(x_batch, y_batch): # Iterate through each element in the mini batch
+                    self.feed_forward(xx) # Feedforward each xx
+                    self.backpropagation(yy) # Backpropagate the xx with yy
+                self.gradient_descent(batch_size) # After receiving the mini batch apply the gradient descent
+
+                # Re-initialize the partial derivatives to zero
                 self.cost_grad_biases = []
                 self.cost_grad_weights = []
                 for i in range(1, self.layers):
-                    self.cost_grad_weights.append(np.zeros((self.arch[i], self.arch[i-1]))) # Re-initialize the partial derivatives
+                    self.cost_grad_weights.append(np.zeros((self.arch[i], self.arch[i-1])))
                     self.cost_grad_biases.append(np.zeros((self.arch[i], 1)))
 
         predicted = []
@@ -126,8 +129,9 @@ class SimpleNN:
         return predicted
 
 
-arch = [1, 30, 10, 10, 1]
+arch = [1, 20, 10, 10, 1]
 eta = 2
+
 
 nn = SimpleNN(arch, eta)
 predicted = nn.train(100, x, y, 10)
